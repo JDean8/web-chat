@@ -28,8 +28,29 @@ const io = new Server(expressSever, {
 io.on("connection", (socket) => {
   console.log(`User Connected: ${socket.id}`);
 
+  // On connection - send message to only user then to all others
+  socket.emit("message", "Welcome to Web-Chat!");
+  socket.broadcast.emit(
+    "message",
+    `User Connected: ${socket.id.substring(0, 5)}`
+  );
+
+  // listening for message event
   socket.on("message", (data) => {
     console.log(data);
     io.emit("message", `${socket.id.substring(0, 5)}: ${data}`);
+  });
+
+  // When user diconnects - to all others
+  socket.on("disconnect", () => {
+    socket.broadcast.emit(
+      "message",
+      `User logged off: ${socket.id.substring(0, 5)}`
+    );
+  });
+
+  //listen for activity
+  socket.on("activity", (name) => {
+    socket.broadcast.emit("activity", name);
   });
 });
